@@ -94,6 +94,8 @@ export class AuthStore extends ComponentStore<AuthState> {
         console.info('[Angular Spotify] Existing session, retrieving information');
         this.patchState(sessionData);
 
+        console.log('[Angular Spotify] Existing session, retrieving information', sessionData)
+
         if (this.isTokenExpired(sessionData.expiresAt)) {
           LocalStorageService.setItem('PATH', window.location.pathname);
           console.info(
@@ -160,7 +162,7 @@ export class AuthStore extends ComponentStore<AuthState> {
       return {
         accessToken: getAccessTokenResponse.access_token,
         expiresIn: getAccessTokenResponse.expires_in,
-        expiresAt: Date.now() + getAccessTokenResponse.expires_in * 1000,
+        expiresAt: Math.floor(Date.now() / 1000) + getAccessTokenResponse.expires_in,
         refreshToken: getAccessTokenResponse.refresh_token,
         scope: getAccessTokenResponse.scope
       };
@@ -202,8 +204,8 @@ export class AuthStore extends ComponentStore<AuthState> {
     if (!expiresAt || isNaN(expiresAt)) {
       throw new Error('Invalid expiration timestamp');
     }
-
     const currentTimestamp = Math.floor(Date.now() / 1000);
+    console.log("Current timestamp", currentTimestamp);
     return currentTimestamp > expiresAt;
   }
 }
