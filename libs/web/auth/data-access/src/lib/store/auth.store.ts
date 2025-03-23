@@ -167,10 +167,7 @@ export class AuthStore extends ComponentStore<AuthState> {
 
   private handleAccessTokenRequestError() {
     return (error: any) => {
-      console.error(
-        'Non successful retrieving access token response, redirecting to authorize',
-        error
-      );
+      console.error('Non successful retrieving access token response, redirecting to authorize');
       this.clearSessionAndRedirectToAuthorize();
       return of(error);
     };

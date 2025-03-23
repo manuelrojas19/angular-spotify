@@ -9,7 +9,7 @@ import {
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthStore } from '@angular-spotify/web/auth/data-access';
-import { switchMap, take, tap } from 'rxjs/operators';
+import { map, switchMap, take } from 'rxjs/operators';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -20,13 +20,12 @@ export class AuthInterceptor implements HttpInterceptor {
 
     if (excludedUrls.includes(req.url)) {
       return next.handle(req).pipe(
-        tap((res: HttpEvent<any>) => {
+        map((res: HttpEvent<any>) => {
           if (res instanceof HttpErrorResponse) {
-            if (res.status !== 200) {
-              console.error('Non 200 response received:', res.status);
-              throw new Error(`Non 200 response received: ${res.status}`);
-            }
+            console.error('Non 200 response received:', res.status);
+            throw new Error(`Non 200 response received: ${res.status}`);
           }
+          return res;
         })
       );
     }

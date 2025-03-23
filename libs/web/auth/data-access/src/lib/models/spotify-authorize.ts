@@ -47,7 +47,16 @@ export class SpotifyAuthorize {
     return `${this.SPOTIFY_AUTHORIZE_URL}?${params.toString()}`;
   }
 
-  getAccessToken(code: string, codeVerifier: string): Observable<{ access_token: string; token_type: string; expires_in: number, refresh_token: string,  scope: string }> {
+  getAccessToken(
+    code: string,
+    codeVerifier: string
+  ): Observable<{
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    refresh_token: string;
+    scope: string;
+  }> {
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     const body = new HttpParams()
       .set('client_id', this.CLIENT_ID)
@@ -56,25 +65,35 @@ export class SpotifyAuthorize {
       .set('redirect_uri', this.REDIRECT_URI)
       .set('code_verifier', codeVerifier);
 
-    return this.http.post<{ access_token: string; token_type: string; expires_in: number, refresh_token: string,  scope: string }>(
-      this.SPOTIFY_TOKEN_URL,
-      body,
-      { headers }
-    );
+    return this.http.post<{
+      access_token: string;
+      token_type: string;
+      expires_in: number;
+      refresh_token: string;
+      scope: string;
+    }>(this.SPOTIFY_TOKEN_URL, body, { headers });
   }
 
-  getRefreshToken(refreshToken: string): Observable<{ access_token: string; token_type: string; expires_in: number, refresh_token: string,  scope: string }> {
+  getRefreshToken(refreshToken: string): Observable<{
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    refresh_token: string;
+    scope: string;
+  }> {
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     const body = new HttpParams()
       .set('client_id', this.CLIENT_ID)
       .set('grant_type', 'refresh_token')
       .set('refresh_token', refreshToken);
 
-    return this.http.post<{ access_token: string; token_type: string; expires_in: number, refresh_token: string,  scope: string }>(
-      this.SPOTIFY_TOKEN_URL,
-      body,
-      { headers }
-    );
+    return this.http.post<{
+      access_token: string;
+      token_type: string;
+      expires_in: number;
+      refresh_token: string;
+      scope: string;
+    }>(this.SPOTIFY_TOKEN_URL, body, { headers });
   }
 
   async generateCodeChallenge(codeVerifier: string): Promise<string> {
@@ -92,9 +111,8 @@ export class SpotifyAuthorize {
 
   private base64UrlEncode(buffer: Uint8Array): string {
     return btoa(String.fromCharCode(...buffer))
-      .replace(/=/g, '')  // Remove padding
+      .replace(/=/g, '') // Remove padding
       .replace(/\+/g, '-') // URL-safe
       .replace(/\//g, '_');
   }
-
 }
