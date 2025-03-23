@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { ComponentStore } from '@ngrx/component-store';
 import { Store } from '@ngrx/store';
 import { Observable, of } from 'rxjs';
-import { filter, map, switchMapTo, take, tap } from 'rxjs/operators';
+import { catchError, filter, map, switchMapTo, take, tap } from 'rxjs/operators';
 import { LocalStorageService } from '@angular-spotify/web/settings/data-access';
 import { AccessTokenResponse, SpotifyAuthorize } from '../models/spotify-authorize';
 import { SpotifyApiService } from '@angular-spotify/web/shared/data-access/spotify-api';
@@ -94,7 +94,7 @@ export class AuthStore extends ComponentStore<AuthState> {
         console.info('[Angular Spotify] Existing session, retrieving information');
         this.patchState(sessionData);
 
-        console.log('[Angular Spotify] Existing session, retrieving information', sessionData)
+        console.log('[Angular Spotify] Existing session, retrieving information', sessionData);
 
         if (this.isTokenExpired(sessionData.expiresAt)) {
           LocalStorageService.setItem('PATH', window.location.pathname);
@@ -148,13 +148,32 @@ export class AuthStore extends ComponentStore<AuthState> {
   initRetrieveAccessToken(authCode: string, codeVerifier: string) {
     return this.spotifyAuthorize
       .getAccessToken(authCode, codeVerifier)
-      .pipe(map(this.mapAccessTokenResponse()), tap(this.handleAccessTokenResponse()));
+      .pipe(
+        map(this.mapAccessTokenResponse()),
+        tap(this.handleAccessTokenResponse()),
+        catchError(this.handleAccessTokenRequestError())
+      );
   }
 
   initRetrieveRefreshToken(refreshToken: string) {
     return this.spotifyAuthorize
       .getRefreshToken(refreshToken)
-      .pipe(map(this.mapAccessTokenResponse()), tap(this.handleAccessTokenResponse()));
+      .pipe(
+        map(this.mapAccessTokenResponse()),
+        tap(this.handleAccessTokenResponse()),
+        catchError(this.handleAccessTokenRequestError())
+      );
+  }
+
+  private handleAccessTokenRequestError() {
+    return (error: any) => {
+      console.error(
+        'Non successful retrieving access token response, redirecting to authorize',
+        error
+      );
+      this.clearSessionAndRedirectToAuthorize();
+      return of(error);
+    };
   }
 
   private mapAccessTokenResponse() {
@@ -205,7 +224,7 @@ export class AuthStore extends ComponentStore<AuthState> {
       throw new Error('Invalid expiration timestamp');
     }
     const currentTimestamp = Math.floor(Date.now() / 1000);
-    console.log("Current timestamp", currentTimestamp);
+    console.log('Current timestamp', currentTimestamp);
     return currentTimestamp > expiresAt;
   }
 }
